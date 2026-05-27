@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EARNINGS TERMINAL — ES / NQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --ink: #141414;
+    --graphite: #1f1f1f;
+    --steel: #2a2a2a;
+    --ash: #3d3d3d;
+    --fog: #6b6b6b;
+    --silver: #9a9a9a;
+    --bone: #d4d4d4;
+    --paper: #ededed;
+    --chalk: #f5f5f5;
+    --bull: #c8c8c8;
+    --bear: #707070;
+    --accent: #f5f5f5;
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.18);
+  }
+
+  html, body {
+    background: var(--black);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 3px 3px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container { position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--line-strong);
+    padding: 24px 40px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+    background: var(--black);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .brand-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    color: var(--chalk);
+    line-height: 1;
+  }
+
+  .brand-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--silver);
+  }
+
+  .brand-sub {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--fog);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .head-meta {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+  }
+
+  .meta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .meta-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--fog);
+  }
+
+  .meta-value {
+    font-size: 14px;
+    color: var(--chalk);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--paper);
+    margin-right: 8px;
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--line);
+    padding: 0 40px;
+    background: var(--ink);
+  }
+
+  .tab {
+    padding: 14px 22px;
+    background: none;
+    border: none;
+    color: var(--fog);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .tab:hover { color: var(--bone); }
+
+  .tab.active {
+    color: var(--chalk);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--paper);
+  }
+
+  .tab-count {
+    margin-left: 8px;
+    color: var(--ash);
+    font-size: 10px;
+  }
+  .tab.active .tab-count { color: var(--silver); }
+
+  /* SUMMARY BAR */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .summary-cell {
+    background: var(--black);
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .summary-cell-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--fog);
+  }
+
+  .summary-cell-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 28px;
+    color: var(--chalk);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary-cell-meta {
+    font-size: 10px;
+    color: var(--silver);
+    letter-spacing: 0.05em;
+  }
+
+  /* MAIN */
+  main { padding: 0 40px 80px; }
+
+  .section-head {
+    padding: 32px 0 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--chalk);
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--silver);
+  }
+
+  .section-meta {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--fog);
+  }
+
+  /* TABLE */
+  .table-wrap {
+    margin-top: 0;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--fog);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    background: var(--ink);
+    position: sticky;
+    top: 0;
+  }
+
+  thead th.num { text-align: right; }
+
+  tbody td {
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--bone);
+    vertical-align: middle;
+  }
+
+  tbody td.num { text-align: right; }
+
+  tbody tr {
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  tbody tr:hover { background: var(--graphite); }
+  tbody tr.expanded { background: var(--ink); }
+
+  .sym {
+    font-weight: 700;
+    color: var(--chalk);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .company-name {
+    font-size: 11px;
+    color: var(--fog);
+    margin-top: 2px;
+  }
+
+  .session-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--silver);
+  }
+
+  .session-pill.bmo { border-color: rgba(255,255,255,0.3); color: var(--chalk); }
+  .session-pill.amc { border-color: rgba(255,255,255,0.15); color: var(--silver); background: var(--graphite); }
+  .session-pill.dmh { border-color: rgba(255,255,255,0.1); color: var(--fog); }
+
+  .time-cell { color: var(--paper); }
+  .time-sub { color: var(--fog); font-size: 10px; margin-top: 2px; }
+
+  .status-pending { color: var(--fog); font-style: italic; }
+  .status-beat { color: var(--chalk); font-weight: 600; }
+  .status-miss { color: var(--silver); }
+  .status-inline { color: var(--bone); }
+
+  .delta-pos { color: var(--chalk); }
+  .delta-pos::before { content: '▲ '; font-size: 9px; }
+  .delta-neg { color: var(--fog); }
+  .delta-neg::before { content: '▼ '; font-size: 9px; }
+
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .verdict.bullish { background: var(--chalk); color: var(--black); }
+  .verdict.bearish { background: var(--steel); color: var(--silver); border: 1px solid var(--line-strong); }
+  .verdict.neutral { background: transparent; color: var(--fog); border: 1px solid var(--line-strong); }
+
+  .tier-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+  .tier-badge.tier-10 { background: var(--chalk); color: var(--black); }
+  .tier-badge.tier-20 { background: var(--paper); color: var(--black); }
+  .tier-badge.tier-50 { background: var(--bone); color: var(--black); }
+  .tier-badge.tier-100 { background: var(--ash); color: var(--chalk); border: 1px solid var(--line-strong); }
+  .tier-badge.tier-500 { background: transparent; color: var(--silver); border: 1px solid var(--line-strong); }
+  .tier-badge.tier-other { background: transparent; color: var(--fog); border: 1px dashed var(--line); }
+
+  tbody tr.row-tier-10 { background: rgba(255,255,255,0.025); }
+  tbody tr.row-tier-10:hover { background: rgba(255,255,255,0.05); }
+  tbody tr.row-tier-10 .sym { font-size: 14px; }
+  tbody tr.row-tier-20 { background: rgba(255,255,255,0.012); }
+  tbody tr.row-tier-20:hover { background: rgba(255,255,255,0.04); }
+
+  /* Weight display next to ticker */
+  .weight-line {
+    font-size: 10px;
+    color: var(--fog);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .weight-es, .weight-nq {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    margin-right: 4px;
+    color: var(--silver);
+  }
+  .weight-es strong, .weight-nq strong {
+    color: var(--chalk);
+    font-weight: 600;
+  }
+
+  /* EXPANDED SYNTHESIS */
+  .synth-row { display: none; }
+  .synth-row.open { display: table-row; }
+
+  .synth-cell {
+    background: var(--ink) !important;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--line-strong) !important;
+  }
+
+  .synth-content {
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    border-left: 2px solid var(--paper);
+  }
+
+  .synth-block h4 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--silver);
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .synth-block p {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--bone);
+  }
+
+  .synth-block strong { color: var(--chalk); font-weight: 600; }
+
+  .impact-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 11px;
+  }
+  .impact-line:last-child { border: none; }
+  .impact-line span:first-child { color: var(--fog); }
+  .impact-line span:last-child { color: var(--paper); font-weight: 600; }
+
+  /* LOADING / EMPTY */
+  .empty-state, .loading-state {
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--fog);
+  }
+  .empty-state h3, .loading-state h3 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 24px;
+    color: var(--silver);
+    margin-bottom: 8px;
+  }
+
+  .skeleton {
+    height: 14px;
+    background: linear-gradient(90deg, var(--ink), var(--graphite), var(--ink));
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 2px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 24px 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--fog);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .refresh-spin {
+    display: inline-block;
+    margin-left: 6px;
+  }
+  .refresh-spin.active {
+    animation: spin 0.8s linear;
+  }
+  @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  .error-banner {
+    margin: 16px 0;
+    padding: 12px 18px;
+    border: 1px solid var(--ash);
+    background: var(--ink);
+    color: var(--bone);
+    font-size: 11px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+
+  @media (max-width: 900px) {
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .synth-content { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 18px 20px; }
+    .head-meta { flex-wrap: wrap; gap: 18px; }
+    main, .tabs, footer { padding-left: 20px; padding-right: 20px; }
+    .brand-title { font-size: 26px; }
+    thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <div class="brand-title">Earnings <em>Terminal</em></div>
+      <div class="brand-sub">TOP 100 ES · TOP 20 NQ · IMPACT INTELLIGENCE</div>
+    </div>
+    <div class="head-meta">
+      <div class="meta-block">
+        <span class="meta-label">Heure New York</span>
+        <span class="meta-value" id="time-et">—</span>
+      </div>
+      <div class="meta-block">
+        <span class="meta-label">Heure Paris</span>
+        <span class="meta-value" id="time-paris">—</span>
+      </div>
+      <div class="meta-block">
+        <span class="meta-label">Flux</span>
+        <span class="meta-value"><span class="status-dot"></span>LIVE</span>
+        <span style="font-size: 9px; color: var(--fog); letter-spacing: 0.15em; margin-top: 2px;" id="conn-status">CONNEXION...</span>
+      </div>
+      <div class="meta-block">
+        <span class="meta-label">Refresh<span class="refresh-spin" id="refresh-icon">↻</span></span>
+        <span class="meta-value" id="next-refresh">60s</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-range="week">Cette semaine <span class="tab-count" id="count-week">—</span></button>
+    <button class="tab" data-range="month">Ce mois <span class="tab-count" id="count-month">—</span></button>
+    <button class="tab" data-range="today">Aujourd'hui <span class="tab-count" id="count-today">—</span></button>
+    <button class="tab" data-range="tomorrow">Demain <span class="tab-count" id="count-tomorrow">—</span></button>
+  </nav>
+
+  <div class="summary-bar">
+    <div class="summary-cell">
+      <span class="summary-cell-label">Publications</span>
+      <span class="summary-cell-value" id="kpi-total">—</span>
+      <span class="summary-cell-meta" id="kpi-total-meta">sur la période</span>
+    </div>
+    <div class="summary-cell">
+      <span class="summary-cell-label">Beats</span>
+      <span class="summary-cell-value" id="kpi-beat">—</span>
+      <span class="summary-cell-meta" id="kpi-beat-meta">EPS au-dessus du consensus</span>
+    </div>
+    <div class="summary-cell">
+      <span class="summary-cell-label">Misses</span>
+      <span class="summary-cell-value" id="kpi-miss">—</span>
+      <span class="summary-cell-meta" id="kpi-miss-meta">EPS sous le consensus</span>
+    </div>
+    <div class="summary-cell">
+      <span class="summary-cell-label">Net ES</span>
+      <span class="summary-cell-value" id="kpi-es">—</span>
+      <span class="summary-cell-meta">S&P 500 composantes</span>
+    </div>
+    <div class="summary-cell">
+      <span class="summary-cell-label">Net NQ</span>
+      <span class="summary-cell-value" id="kpi-nq">—</span>
+      <span class="summary-cell-meta">Nasdaq 100 composantes</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="section-head">
+      <div class="section-title">Publications <em>TOP 100 ES / TOP 20 NQ</em></div>
+      <div class="section-meta" id="section-period">—</div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="earnings-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Session</th>
+            <th>Ticker</th>
+            <th class="num">EPS Est.</th>
+            <th class="num">EPS Act.</th>
+            <th class="num">Δ EPS</th>
+            <th class="num">Rev. Est. ($M)</th>
+            <th class="num">Rev. Act. ($M)</th>
+            <th>Statut</th>
+            <th>Impact ES/NQ</th>
+          </tr>
+        </thead>
+        <tbody id="earnings-body">
+          <tr><td colspan="11" class="loading-state">
+            <h3>Connexion à Finnhub</h3>
+            <p>Récupération du calendrier...</p>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <div>Source · Finnhub.io · Données EPS non-GAAP · Estimations sell-side/buy-side</div>
+    <div>Dernière mise à jour <span id="last-update">—</span></div>
+  </footer>
+
+</div>
+
+<script>
+  // ============ CONFIG ============
+  const API_KEY = 'd8bh8n1r01qu2eqhai70d8bh8n1r01qu2eqhai7g';
+  const BASE = 'https://finnhub.io/api/v1';
+  const REFRESH_MS = 10000;
+
+  // CORS strategies tried in order: direct first (works when hosted), then proxies as fallback.
+  const FETCH_STRATEGIES = [
+    { name: 'direct', build: (u) => u },
+    { name: 'corsproxy.io', build: (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}` },
+    { name: 'allorigins', build: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+    { name: 'codetabs', build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+    { name: 'thingproxy', build: (u) => `https://thingproxy.freeboard.io/fetch/${u}` }
+  ];
+
+  let workingStrategy = null; // remember which proxy works to avoid re-testing
+
+  // S&P 500 components (subset of most weighted / most market-moving for ES futures)
+  const SP500 = new Set([
+    'AAPL','MSFT','NVDA','AMZN','META','GOOGL','GOOG','BRK.B','LLY','AVGO','TSLA','JPM','WMT','V','XOM',
+    'UNH','MA','PG','JNJ','COST','HD','ORCL','BAC','ABBV','NFLX','KO','CVX','MRK','CRM','ADBE','PEP',
+    'AMD','TMO','LIN','MCD','CSCO','ACN','ABT','WFC','DHR','INTC','TXN','VZ','DIS','PM','IBM','GE',
+    'NOW','QCOM','CAT','INTU','AMGN','AXP','UBER','UNP','MS','GS','BLK','LOW','RTX','BKNG','ISRG','SPGI',
+    'NEE','HON','SYK','C','PFE','T','BA','PLTR','TJX','BSX','SCHW','VRTX','ELV','GILD','MMC','LMT','ETN',
+    'PGR','CB','MDT','CMCSA','REGN','ANET','ADP','BX','TMUS','PANW','DE','AMAT','MU','LRCX','KLAC','MDLZ',
+    'ADI','SO','DUK','SHW','CI','BMY','MO','EQIX','APH','SBUX','ICE','PYPL','ZTS','CL','HCA','TT','APD',
+    'SNPS','CDNS','MELI','CME','PNC','USB','AON','MCO','CSX','EOG','ITW','CRWD','MAR','FCX','FDX','PH','MMM',
+    'WM','EMR','GD','MSI','NXPI','NSC','PSX','FTNT','TGT','OXY','SLB','MCK','ECL','PCAR','HUM','EW',
+    'CTAS','DELL','ABNB','ROP','APO','AJG','TFC','AZO','AIG','GM','F','COIN','VLO','CMG','TDG','PSA','AFL',
+    'WELL','SPG','PAYX','MNST','BK','HLT','TRV','ALL','MET','PRU','ORLY','ROST','KMB','RSG','KDP','SRE',
+    'CARR','OTIS','FIS','FAST','D','EXC','AEP','VST','URI','HSY','GIS','SYY','KMI','DXCM','HES','PWR',
+    'MPC','ADM','PEG','XEL','AME','GWW','CTSH','VRSK','EFX','LULU','EBAY','IDXX','HPQ','BIIB','KHC','MTD',
+    'YUM','BR','AVB','ZBH','GLW','EXR','TSCO','BKR','ED','WBA','DOW','PCG','WEC','STZ','CHTR','EIX','DOV',
+    'CNC','MLM','VMC','RCL','LEN','DHI','NEM','WMB','OKE','DLR','EQR','CPRT','GEHC','PPG','TROW','HIG',
+    'CCI','WTW','FE','ANSS','CDW','ALGN','ULTA','EXPE','LDOS','FANG','AEE','ATO','VTR','ESS','PSTG','PODD'
+  ]);
+
+  // Nasdaq 100 components (most market-moving for NQ futures)
+  const NDX = new Set([
+    'AAPL','MSFT','NVDA','AMZN','META','GOOGL','GOOG','AVGO','TSLA','COST','NFLX','ADBE','PEP','AMD','TMUS',
+    'CSCO','INTC','TXN','QCOM','INTU','AMGN','CMCSA','HON','BKNG','AMAT','VRTX','PANW','GILD','ADP','MU',
+    'ADI','SBUX','LRCX','KLAC','REGN','MDLZ','SNPS','CDNS','MELI','CRWD','MAR','FTNT','PYPL','CTAS','ABNB',
+    'ROP','ORLY','MNST','PAYX','KDP','DXCM','CHTR','AEP','EXC','MRVL','NXPI','CSX','PCAR','ROST','IDXX',
+    'FAST','XEL','BIIB','CTSH','TTD','EA','VRSK','ANSS','GEHC','PDD','LULU','ON','CDW','BKR','TEAM','ZS',
+    'DDOG','GFS','ARM','MDB','ASML','AZN','DLTR','MCHP','WBA','ALGN','SIRI','ILMN','EBAY','WBD','TTWO',
+    'CCEP','ODFL','APP','FANG','PLTR'
+  ]);
+
+  // ====================================================================
+  // INDEX WEIGHTINGS — Real S&P 500 (ES) and Nasdaq 100 (NQ) weights
+  // Source: SPY holdings (May 2026) + QQQ holdings (Jan 2026)
+  // Weights in percent. Used for filtering, sorting, and impact analysis.
+  // ====================================================================
+  const WEIGHTS = {
+    // Mega-caps (in both indices)
+    'NVDA':   { es: 7.95, nq: 9.04, rank_es: 1,  rank_nq: 1  },
+    'AAPL':   { es: 6.72, nq: 8.01, rank_es: 2,  rank_nq: 2  },
+    'MSFT':   { es: 6.71, nq: 7.17, rank_es: 3,  rank_nq: 3  },
+    'GOOGL':  { es: 2.50, nq: 4.20, rank_es: 7,  rank_nq: 4  },
+    'GOOG':   { es: 2.08, nq: 2.80, rank_es: 9,  rank_nq: 5  },
+    'AMZN':   { es: 3.78, nq: 4.92, rank_es: 4,  rank_nq: 6  },
+    'META':   { es: 2.82, nq: 3.87, rank_es: 6,  rank_nq: 7  },
+    'AVGO':   { es: 3.20, nq: 3.26, rank_es: 5,  rank_nq: 8  },
+    'TSLA':   { es: 1.74, nq: 3.97, rank_es: 11, rank_nq: 9  },
+    'BRK.B':  { es: 1.64, nq: 0,    rank_es: 10, rank_nq: 0  },
+    // Heavy ES weights (S&P only or both)
+    'JPM':    { es: 1.46, nq: 0,    rank_es: 12, rank_nq: 0  },
+    'LLY':    { es: 1.40, nq: 0,    rank_es: 13, rank_nq: 0  },
+    'WMT':    { es: 1.28, nq: 0,    rank_es: 14, rank_nq: 0  },
+    'V':      { es: 1.08, nq: 0,    rank_es: 15, rank_nq: 0  },
+    'XOM':    { es: 1.05, nq: 0,    rank_es: 16, rank_nq: 0  },
+    'NFLX':   { es: 1.19, nq: 2.19, rank_es: 17, rank_nq: 10 },
+    'COST':   { es: 0.85, nq: 1.85, rank_es: 25, rank_nq: 11 },
+    'PLTR':   { es: 0.65, nq: 2.24, rank_es: 35, rank_nq: 12 },
+    'CRM':    { es: 0.55, nq: 0,    rank_es: 45, rank_nq: 0  },
+    'ORCL':   { es: 0.90, nq: 0,    rank_es: 22, rank_nq: 0  },
+    'UNH':    { es: 1.05, nq: 0,    rank_es: 18, rank_nq: 0  },
+    'MA':     { es: 0.92, nq: 0,    rank_es: 20, rank_nq: 0  },
+    'JNJ':    { es: 0.85, nq: 0,    rank_es: 24, rank_nq: 0  },
+    'PG':     { es: 0.83, nq: 0,    rank_es: 26, rank_nq: 0  },
+    'HD':     { es: 0.78, nq: 0,    rank_es: 28, rank_nq: 0  },
+    'BAC':    { es: 0.65, nq: 0,    rank_es: 36, rank_nq: 0  },
+    'ABBV':   { es: 0.72, nq: 0,    rank_es: 30, rank_nq: 0  },
+    'KO':     { es: 0.62, nq: 0,    rank_es: 38, rank_nq: 0  },
+    'CVX':    { es: 0.58, nq: 0,    rank_es: 42, rank_nq: 0  },
+    'MRK':    { es: 0.55, nq: 0,    rank_es: 44, rank_nq: 0  },
+    // Heavy NQ weights (Nasdaq-only or both)
+    'AMD':    { es: 0.65, nq: 1.45, rank_es: 37, rank_nq: 13 },
+    'TMUS':   { es: 0.42, nq: 1.40, rank_es: 60, rank_nq: 14 },
+    'PEP':    { es: 0.50, nq: 1.30, rank_es: 50, rank_nq: 15 },
+    'CSCO':   { es: 0.48, nq: 1.25, rank_es: 52, rank_nq: 16 },
+    'ADBE':   { es: 0.40, nq: 1.10, rank_es: 65, rank_nq: 17 },
+    'LIN':    { es: 0.50, nq: 1.00, rank_es: 49, rank_nq: 18 },
+    'INTU':   { es: 0.42, nq: 1.00, rank_es: 58, rank_nq: 19 },
+    'QCOM':   { es: 0.38, nq: 0.95, rank_es: 68, rank_nq: 20 },
+    // Other relevant heavies (mid-rank ES, low/no NQ)
+    'ABT':    { es: 0.58, nq: 0, rank_es: 43, rank_nq: 0 },
+    'WFC':    { es: 0.55, nq: 0, rank_es: 46, rank_nq: 0 },
+    'TMO':    { es: 0.42, nq: 0, rank_es: 59, rank_nq: 0 },
+    'ACN':    { es: 0.40, nq: 0, rank_es: 63, rank_nq: 0 },
+    'MCD':    { es: 0.45, nq: 0, rank_es: 55, rank_nq: 0 },
+    'DHR':    { es: 0.38, nq: 0, rank_es: 70, rank_nq: 0 },
+    'TXN':    { es: 0.35, nq: 0.85, rank_es: 75, rank_nq: 22 },
+    'PM':     { es: 0.42, nq: 0, rank_es: 61, rank_nq: 0 },
+    'IBM':    { es: 0.40, nq: 0, rank_es: 64, rank_nq: 0 },
+    'GE':     { es: 0.45, nq: 0, rank_es: 56, rank_nq: 0 },
+    'NOW':    { es: 0.35, nq: 0, rank_es: 78, rank_nq: 0 },
+    'INTC':   { es: 0.20, nq: 0.55, rank_es: 110, rank_nq: 25 },
+    'AMGN':   { es: 0.30, nq: 0.75, rank_es: 85, rank_nq: 24 },
+    'CMCSA':  { es: 0.32, nq: 0.78, rank_es: 82, rank_nq: 23 },
+    'HON':    { es: 0.32, nq: 0.72, rank_es: 83, rank_nq: 26 },
+    'BKNG':   { es: 0.35, nq: 0.82, rank_es: 76, rank_nq: 21 },
+    'AMAT':   { es: 0.30, nq: 0.70, rank_es: 88, rank_nq: 27 },
+    'VRTX':   { es: 0.25, nq: 0.60, rank_es: 95, rank_nq: 28 },
+    'PANW':   { es: 0.28, nq: 0.65, rank_es: 90, rank_nq: 30 },
+    'GILD':   { es: 0.22, nq: 0.55, rank_es: 100, rank_nq: 32 },
+    'MU':     { es: 0.25, nq: 0.62, rank_es: 96, rank_nq: 29 },
+    'LRCX':   { es: 0.22, nq: 0.55, rank_es: 102, rank_nq: 33 },
+    'KLAC':   { es: 0.20, nq: 0.50, rank_es: 108, rank_nq: 35 },
+    'REGN':   { es: 0.20, nq: 0.48, rank_es: 109, rank_nq: 36 },
+    'SNPS':   { es: 0.18, nq: 0.45, rank_es: 115, rank_nq: 38 },
+    'CDNS':   { es: 0.18, nq: 0.45, rank_es: 116, rank_nq: 39 },
+    'CRWD':   { es: 0.22, nq: 0.55, rank_es: 99, rank_nq: 34 },
+    'MRVL':   { es: 0.15, nq: 0.40, rank_es: 130, rank_nq: 42 },
+    'DDOG':   { es: 0.12, nq: 0.32, rank_es: 145, rank_nq: 48 },
+    'ASML':   { es: 0,    nq: 0.85, rank_es: 0, rank_nq: 23 },
+    'PDD':    { es: 0,    nq: 0.50, rank_es: 0, rank_nq: 37 },
+    'ARM':    { es: 0,    nq: 0.40, rank_es: 0, rank_nq: 43 },
+    'MELI':   { es: 0,    nq: 0.42, rank_es: 0, rank_nq: 41 }
+  };
+
+  // Helper: get ES rank for a symbol (default to high number if not in S&P 500)
+  function rankES(symbol) {
+    const w = WEIGHTS[symbol];
+    if (w && w.rank_es > 0) return w.rank_es;
+    return SP500.has(symbol) ? 250 : 9999; // mid-S&P default
+  }
+  function rankNQ(symbol) {
+    const w = WEIGHTS[symbol];
+    if (w && w.rank_nq > 0) return w.rank_nq;
+    return NDX.has(symbol) ? 60 : 9999; // mid-NDX default
+  }
+  function weightES(symbol) {
+    const w = WEIGHTS[symbol];
+    if (w && w.es > 0) return w.es;
+    return SP500.has(symbol) ? 0.05 : 0; // small-cap default
+  }
+  function weightNQ(symbol) {
+    const w = WEIGHTS[symbol];
+    if (w && w.nq > 0) return w.nq;
+    return NDX.has(symbol) ? 0.20 : 0;
+  }
+
+  // FILTER STRATEGY: équilibrée — TOP 100 ES + TOP 20 NQ
+  // (couvre ~75% du mouvement ES et ~70% du mouvement NQ)
+  function passesFilter(symbol) {
+    return rankES(symbol) <= 100 || rankNQ(symbol) <= 20;
+  }
+
+  // Tier classification for badge display
+  function getImportanceTier(symbol) {
+    const rES = rankES(symbol);
+    const rNQ = rankNQ(symbol);
+    const bestRank = Math.min(rES, rNQ);
+
+    if (bestRank <= 10) return { tier: 10, label: 'TOP 10', class: 'tier-10', sortKey: 1 };
+    if (bestRank <= 20) return { tier: 20, label: 'TOP 20', class: 'tier-20', sortKey: 2 };
+    if (bestRank <= 50) return { tier: 50, label: 'TOP 50', class: 'tier-50', sortKey: 3 };
+    if (bestRank <= 100) return { tier: 100, label: 'TOP 100', class: 'tier-100', sortKey: 4 };
+    return { tier: 500, label: 'TOP 500', class: 'tier-500', sortKey: 5 };
+  }
+
+  // Company name + sector lookup (most relevant tickers)
+  const TICKER_INFO = {
+    AAPL: { name: 'Apple Inc.', sector: 'Tech / Hardware', weight: 6.8 },
+    MSFT: { name: 'Microsoft Corp.', sector: 'Tech / Software', weight: 6.5 },
+    NVDA: { name: 'NVIDIA Corp.', sector: 'Semiconductors', weight: 7.1 },
+    AMZN: { name: 'Amazon.com', sector: 'Consumer / Cloud', weight: 3.8 },
+    META: { name: 'Meta Platforms', sector: 'Communication Services', weight: 2.5 },
+    GOOGL: { name: 'Alphabet (A)', sector: 'Communication Services', weight: 2.0 },
+    GOOG: { name: 'Alphabet (C)', sector: 'Communication Services', weight: 1.7 },
+    TSLA: { name: 'Tesla Inc.', sector: 'Auto / EV', weight: 1.6 },
+    AVGO: { name: 'Broadcom', sector: 'Semiconductors', weight: 2.0 },
+    LLY: { name: 'Eli Lilly', sector: 'Pharma / GLP-1', weight: 1.4 },
+    JPM: { name: 'JPMorgan Chase', sector: 'Banks', weight: 1.4 },
+    V: { name: 'Visa Inc.', sector: 'Payments', weight: 1.0 },
+    MA: { name: 'Mastercard', sector: 'Payments', weight: 0.8 },
+    WMT: { name: 'Walmart', sector: 'Consumer Staples', weight: 0.8 },
+    XOM: { name: 'ExxonMobil', sector: 'Energy', weight: 1.1 },
+    JNJ: { name: 'Johnson & Johnson', sector: 'Pharma', weight: 0.8 },
+    PG: { name: 'Procter & Gamble', sector: 'Consumer Staples', weight: 0.9 },
+    UNH: { name: 'UnitedHealth', sector: 'Healthcare / Insurance', weight: 1.1 },
+    HD: { name: 'Home Depot', sector: 'Consumer Discretionary', weight: 0.8 },
+    ORCL: { name: 'Oracle', sector: 'Tech / Cloud', weight: 0.9 },
+    NFLX: { name: 'Netflix', sector: 'Streaming / Media', weight: 0.9 },
+    CRM: { name: 'Salesforce', sector: 'Tech / Software', weight: 0.5 },
+    ADBE: { name: 'Adobe', sector: 'Tech / Software', weight: 0.4 },
+    AMD: { name: 'Advanced Micro Devices', sector: 'Semiconductors', weight: 0.7 },
+    INTC: { name: 'Intel', sector: 'Semiconductors', weight: 0.3 },
+    QCOM: { name: 'Qualcomm', sector: 'Semiconductors', weight: 0.4 },
+    MU: { name: 'Micron Technology', sector: 'Semiconductors / Memory', weight: 0.3 },
+    TSM: { name: 'TSMC', sector: 'Semiconductors / Foundry', weight: 0 },
+    DELL: { name: 'Dell Technologies', sector: 'Tech / Hardware', weight: 0.2 },
+    HPQ: { name: 'HP Inc.', sector: 'Tech / Hardware', weight: 0.1 },
+    PLTR: { name: 'Palantir', sector: 'Tech / Software / Defense', weight: 0.3 },
+    CRWD: { name: 'CrowdStrike', sector: 'Cybersecurity', weight: 0.2 },
+    PANW: { name: 'Palo Alto Networks', sector: 'Cybersecurity', weight: 0.2 },
+    SNOW: { name: 'Snowflake', sector: 'Tech / Cloud / Data', weight: 0.1 },
+    UBER: { name: 'Uber Technologies', sector: 'Tech / Mobility', weight: 0.3 },
+    COIN: { name: 'Coinbase', sector: 'Crypto / Fintech', weight: 0.1 },
+    SHOP: { name: 'Shopify', sector: 'E-commerce', weight: 0 },
+    DIS: { name: 'Walt Disney', sector: 'Media / Entertainment', weight: 0.4 },
+    BA: { name: 'Boeing', sector: 'Aerospace', weight: 0.3 },
+    CAT: { name: 'Caterpillar', sector: 'Industrials', weight: 0.4 },
+    GE: { name: 'General Electric', sector: 'Industrials / Aerospace', weight: 0.4 },
+    F: { name: 'Ford Motor', sector: 'Auto', weight: 0.1 },
+    GM: { name: 'General Motors', sector: 'Auto', weight: 0.2 },
+    BAC: { name: 'Bank of America', sector: 'Banks', weight: 0.6 },
+    GS: { name: 'Goldman Sachs', sector: 'Investment Banking', weight: 0.4 },
+    MS: { name: 'Morgan Stanley', sector: 'Investment Banking', weight: 0.4 },
+    WFC: { name: 'Wells Fargo', sector: 'Banks', weight: 0.4 },
+    C: { name: 'Citigroup', sector: 'Banks', weight: 0.3 },
+    KO: { name: 'Coca-Cola', sector: 'Consumer Staples', weight: 0.7 },
+    PEP: { name: 'PepsiCo', sector: 'Consumer Staples', weight: 0.5 },
+    MCD: { name: "McDonald's", sector: 'Restaurants', weight: 0.5 },
+    SBUX: { name: 'Starbucks', sector: 'Restaurants', weight: 0.2 },
+    NKE: { name: 'Nike', sector: 'Apparel', weight: 0.2 },
+    TGT: { name: 'Target', sector: 'Consumer Discretionary', weight: 0.1 },
+    COST: { name: 'Costco', sector: 'Consumer Staples', weight: 0.8 },
+    MRK: { name: 'Merck', sector: 'Pharma', weight: 0.6 },
+    PFE: { name: 'Pfizer', sector: 'Pharma', weight: 0.3 },
+    ABBV: { name: 'AbbVie', sector: 'Pharma', weight: 0.7 },
+    CVX: { name: 'Chevron', sector: 'Energy', weight: 0.5 },
+    SLB: { name: 'Schlumberger', sector: 'Energy / Services', weight: 0.1 },
+    LMT: { name: 'Lockheed Martin', sector: 'Defense', weight: 0.2 },
+    RTX: { name: 'RTX Corp', sector: 'Defense / Aerospace', weight: 0.3 },
+    TMUS: { name: 'T-Mobile US', sector: 'Telecom', weight: 0.3 },
+    VZ: { name: 'Verizon', sector: 'Telecom', weight: 0.4 },
+    T: { name: 'AT&T', sector: 'Telecom', weight: 0.3 },
+  };
+
+  // Sector → ES/NQ correlation hints
+  const SECTOR_NARRATIVE = {
+    'Semiconductors': { es: 'modéré', nq: 'fort', theme: 'cycle IA et demande GPU/HBM' },
+    'Semiconductors / Memory': { es: 'modéré', nq: 'fort', theme: 'cycle mémoire DRAM/HBM' },
+    'Semiconductors / Foundry': { es: 'modéré', nq: 'fort', theme: 'capex IA et capacités de production' },
+    'Tech / Software': { es: 'modéré', nq: 'fort', theme: 'guidance SaaS et adoption IA générative' },
+    'Tech / Hardware': { es: 'modéré', nq: 'fort', theme: 'cycle de remplacement et marges' },
+    'Tech / Cloud': { es: 'modéré', nq: 'fort', theme: 'croissance des hyperscalers et capex IA' },
+    'Tech / Cloud / Data': { es: 'modéré', nq: 'fort', theme: 'consommation cloud et data warehousing' },
+    'Tech / Mobility': { es: 'faible', nq: 'modéré', theme: 'profitabilité plateformes' },
+    'Tech / Software / Defense': { es: 'faible', nq: 'modéré', theme: 'contrats gouvernementaux et IA' },
+    'Cybersecurity': { es: 'faible', nq: 'modéré', theme: 'budgets sécurité et consolidation' },
+    'Cloud': { es: 'modéré', nq: 'fort', theme: 'croissance ARR' },
+    'Communication Services': { es: 'fort', nq: 'fort', theme: 'pub digitale et engagement' },
+    'Streaming / Media': { es: 'modéré', nq: 'fort', theme: 'abonnés et monétisation pub' },
+    'Media / Entertainment': { es: 'modéré', nq: 'modéré', theme: 'streaming et parcs' },
+    'Pharma': { es: 'modéré', nq: 'faible', theme: 'pipeline et brevets' },
+    'Pharma / GLP-1': { es: 'fort', nq: 'faible', theme: 'demande GLP-1 et capacités' },
+    'Healthcare / Insurance': { es: 'fort', nq: 'faible', theme: 'medical loss ratio et utilisation' },
+    'Banks': { es: 'fort', nq: 'faible', theme: 'NII, provisions et trading' },
+    'Investment Banking': { es: 'fort', nq: 'faible', theme: 'M&A, IPO et revenus de trading' },
+    'Payments': { es: 'fort', nq: 'modéré', theme: 'volumes de paiement consommateur' },
+    'Energy': { es: 'modéré', nq: 'faible', theme: 'prix du baril et capex' },
+    'Energy / Services': { es: 'modéré', nq: 'faible', theme: 'activité de forage international' },
+    'Consumer Staples': { es: 'modéré', nq: 'faible', theme: 'pricing power et volumes' },
+    'Consumer Discretionary': { es: 'fort', nq: 'modéré', theme: 'santé du consommateur' },
+    'Restaurants': { es: 'modéré', nq: 'faible', theme: 'comparables de ventes' },
+    'Auto': { es: 'modéré', nq: 'faible', theme: 'volumes, prix et incentives' },
+    'Auto / EV': { es: 'modéré', nq: 'fort', theme: 'marges, livraisons et FSD' },
+    'Industrials': { es: 'fort', nq: 'faible', theme: 'carnet de commandes et cycle' },
+    'Industrials / Aerospace': { es: 'fort', nq: 'faible', theme: 'aviation civile et défense' },
+    'Aerospace': { es: 'modéré', nq: 'faible', theme: 'livraisons et qualité' },
+    'Defense': { es: 'modéré', nq: 'faible', theme: 'budgets et géopolitique' },
+    'Defense / Aerospace': { es: 'modéré', nq: 'faible', theme: 'budgets et géopolitique' },
+    'Telecom': { es: 'modéré', nq: 'modéré', theme: 'ARPU et churn' },
+    'Apparel': { es: 'modéré', nq: 'faible', theme: 'consommateur et Chine' },
+    'E-commerce': { es: 'modéré', nq: 'modéré', theme: 'GMV et take rate' },
+    'Crypto / Fintech': { es: 'faible', nq: 'modéré', theme: 'volumes crypto' },
+  };
+
+  // ============ STATE ============
+  let currentRange = 'week';
+  let allEarnings = [];
+  let openRow = null;
+  let refreshTimer = null;
+  let countdown = REFRESH_MS / 1000;
+
+  // ============ TIME UTILS ============
+  function fmtClock(opts) {
+    return new Date().toLocaleTimeString('fr-FR', { ...opts, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function updateClocks() {
+    document.getElementById('time-et').textContent = fmtClock({ timeZone: 'America/New_York' }) + ' ET';
+    document.getElementById('time-paris').textContent = fmtClock({ timeZone: 'Europe/Paris' }) + ' CET';
+  }
+
+  function getDateRange(range) {
+    const now = new Date();
+    const tz = { timeZone: 'America/New_York' };
+    const todayET = new Date(now.toLocaleString('en-US', tz));
+    const iso = d => d.toISOString().slice(0, 10);
+
+    if (range === 'today') {
+      return { from: iso(todayET), to: iso(todayET) };
+    }
+    if (range === 'tomorrow') {
+      const t = new Date(todayET); t.setDate(t.getDate() + 1);
+      return { from: iso(t), to: iso(t) };
+    }
+    if (range === 'week') {
+      const day = todayET.getDay(); // 0 = Sun
+      const monday = new Date(todayET); monday.setDate(todayET.getDate() - ((day + 6) % 7));
+      const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+      return { from: iso(monday), to: iso(sunday) };
+    }
+    // month
+    const first = new Date(todayET.getFullYear(), todayET.getMonth(), 1);
+    const last = new Date(todayET.getFullYear(), todayET.getMonth() + 1, 0);
+    return { from: iso(first), to: iso(last) };
+  }
+
+  function fmtDate(isoDate) {
+    const d = new Date(isoDate + 'T12:00:00Z');
+    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
+  }
+
+  function fmtSession(hour) {
+    if (hour === 'bmo') return { code: 'BMO', label: 'Before Open', etTime: '~07:00 ET', parisTime: '~13:00 Paris' };
+    if (hour === 'amc') return { code: 'AMC', label: 'After Close', etTime: '~16:00 ET', parisTime: '~22:00 Paris' };
+    if (hour === 'dmh') return { code: 'DMH', label: 'During Hours', etTime: 'During Market', parisTime: 'Pendant séance' };
+    return { code: '—', label: 'TBD', etTime: 'À déterminer', parisTime: 'À déterminer' };
+  }
+
+  // ============ FETCH ============
+  function fetchWithTimeout(url, ms = 10000) {
+    return Promise.race([
+      fetch(url),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout ' + ms + 'ms')), ms))
+    ]);
+  }
+
+  function setConnectionStatus(text) {
+    const el = document.getElementById('conn-status');
+    if (el) el.textContent = text;
+  }
+
+  async function tryStrategy(strategy, finnhubUrl) {
+    const proxiedUrl = strategy.build(finnhubUrl);
+    const res = await fetchWithTimeout(proxiedUrl, 8000);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // Finnhub returns { earningsCalendar: [...] } on success, or {error: ...} on auth issue
+    if (data && data.error) throw new Error('API: ' + data.error);
+    if (!data || !('earningsCalendar' in data)) throw new Error('Invalid response shape');
+    return data.earningsCalendar || [];
+  }
+
+  async function fetchEarnings(range) {
+    const { from, to } = getDateRange(range);
+    const finnhubUrl = `${BASE}/calendar/earnings?from=${from}&to=${to}&token=${API_KEY}`;
+    document.getElementById('section-period').textContent = `${fmtDate(from)} → ${fmtDate(to)} · ET`;
+
+    // If we already know which strategy works, try it first
+    const order = workingStrategy
+      ? [workingStrategy, ...FETCH_STRATEGIES.filter(s => s !== workingStrategy)]
+      : FETCH_STRATEGIES;
+
+    const errors = [];
+    for (const strategy of order) {
+      try {
+        const result = await tryStrategy(strategy, finnhubUrl);
+        workingStrategy = strategy;
+        hideError();
+        setConnectionStatus(strategy.name === 'direct' ? 'DIRECT · LIVE' : 'PROXY ' + strategy.name.toUpperCase());
+        return result;
+      } catch (e) {
+        errors.push(`${strategy.name}: ${e.message}`);
+      }
+    }
+
+    // All strategies failed - show real error, no demo fallback
+    setConnectionStatus('HORS LIGNE');
+    showError(
+      `Impossible de joindre Finnhub. Tentatives : ${errors.join(' · ')}. ` +
+      `Vérifie : 1) ta connexion internet, 2) ta clé API sur finnhub.io/dashboard (60 calls/min en gratuit), ` +
+      `3) que le site est bien hébergé (Netlify, GitHub Pages) plutôt qu'ouvert depuis claude.ai preview.`
+    );
+    return [];
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('show');
+  }
+  function hideError() {
+    document.getElementById('error-banner').classList.remove('show');
+  }
+
+  // ============ SYNTHESIS LOGIC ============
+  function analyzeEarning(e) {
+    const sym = e.symbol;
+    const info = TICKER_INFO[sym] || { name: sym, sector: 'Autre', weight: 0 };
+    const inES = SP500.has(sym);
+    const inNQ = NDX.has(sym);
+
+    const epsEst = e.epsEstimate;
+    const epsAct = e.epsActual;
+    const revEst = e.revenueEstimate;
+    const revAct = e.revenueActual;
+
+    let status = 'pending';
+    let epsDelta = null, revDelta = null;
+    if (epsAct !== null && epsAct !== undefined && epsEst !== null && epsEst !== undefined) {
+      epsDelta = epsAct - epsEst;
+      const epsPct = epsEst !== 0 ? (epsDelta / Math.abs(epsEst)) * 100 : 0;
+      if (epsPct > 2) status = 'beat';
+      else if (epsPct < -2) status = 'miss';
+      else status = 'inline';
+    }
+    if (revAct !== null && revAct !== undefined && revEst !== null && revEst !== undefined) {
+      revDelta = revAct - revEst;
+    }
+
+    // Verdict ES / NQ
+    const sectorData = SECTOR_NARRATIVE[info.sector] || { es: 'faible', nq: 'faible', theme: 'flux idiosyncratique' };
+    let verdict = 'neutral';
+    if (status === 'beat') verdict = 'bullish';
+    else if (status === 'miss') verdict = 'bearish';
+
+    return { info, inES, inNQ, status, epsDelta, revDelta, sectorData, verdict };
+  }
+
+  function buildSynthesis(e, analysis) {
+    const sym = e.symbol;
+    const { info, inES, inNQ, status, epsDelta, revDelta, sectorData, verdict } = analysis;
+    const epsAct = e.epsActual, epsEst = e.epsEstimate, revAct = e.revenueActual, revEst = e.revenueEstimate;
+
+    let intro, esImpact, nqImpact, mechanism;
+
+    if (status === 'pending') {
+      intro = `${info.name} (${sym}) publie ses résultats — secteur <strong>${info.sector}</strong>. Consensus EPS attendu : <strong>${epsEst !== null ? '$' + epsEst.toFixed(2) : 'n/a'}</strong>${revEst ? `, chiffre d'affaires : <strong>$${(revEst/1e9).toFixed(2)}B</strong>` : ''}.`;
+      mechanism = `Le marché surveillera particulièrement <strong>${sectorData.theme}</strong>. La réaction des futures dépendra du beat/miss et surtout de la <strong>guidance forward</strong>, qui pèse souvent plus que le trimestre publié.`;
+      esImpact = inES
+        ? `Impact attendu <strong>${sectorData.es}</strong> sur ES. ${sym} pèse ~${info.weight}% du S&P 500. ${info.weight > 1 ? 'Pondération significative — un mouvement >3% sur le titre se transmet directement aux futures.' : 'Pondération modérée, impact via flux sectoriel plutôt qu\'individuel.'}`
+        : `${sym} n'est pas dans le S&P 500. Impact ES <strong>indirect</strong> via lecture sectorielle (${info.sector}) et corrélations peer.`;
+      nqImpact = inNQ
+        ? `Impact attendu <strong>${sectorData.nq}</strong> sur NQ. Composante Nasdaq 100 ${info.weight > 1 ? 'à forte pondération' : ''}. Les semi-conducteurs et le software dominent NQ ; un signal IA fort propage rapidement.`
+        : `${sym} n'est pas dans le Nasdaq 100. Impact NQ via thématique sectorielle (${info.sector}) seulement.`;
+    } else if (status === 'beat') {
+      const epsPct = epsEst !== 0 ? ((epsDelta / Math.abs(epsEst)) * 100).toFixed(1) : '—';
+      intro = `<strong>BEAT</strong> — ${info.name} (${sym}) publie EPS $${epsAct.toFixed(2)} vs $${epsEst.toFixed(2)} attendu (<strong>+${epsPct}%</strong>)${revAct && revEst ? `, revenus $${(revAct/1e9).toFixed(2)}B vs $${(revEst/1e9).toFixed(2)}B (${revDelta >= 0 ? '+' : ''}${((revDelta/revEst)*100).toFixed(1)}%)` : ''}.`;
+      mechanism = `Lecture <strong>bullish</strong> sur ${sectorData.theme}. Un beat propre déclenche typiquement des révisions à la hausse des estimés sell-side et un short-covering en pré-market. La guidance forward et les marges restent à vérifier — un beat sans guidance haussière peut produire un "sell the news".`;
+      esImpact = inES
+        ? `<strong>Bullish ES</strong> — ${sym} pèse ~${info.weight}% du S&P 500. Effet de transmission ${sectorData.es === 'fort' ? 'élevé : les pairs sectoriels co-bouge généralement' : 'modéré via signal sectoriel'}. ${info.weight > 2 ? 'Pondération critique — peut à elle seule pousser ES de plusieurs points.' : ''}`
+        : `Impact ES <strong>indirect bullish</strong>. ${sym} hors S&P 500 mais le signal ${info.sector} se propage par corrélation. Surveiller les pairs (${getPeerHint(info.sector)}).`;
+      nqImpact = inNQ
+        ? `<strong>Bullish NQ</strong> — composante Nasdaq 100. ${sectorData.nq === 'fort' ? 'Les semis/software dominent l\'indice : effet d\'amplification.' : 'Effet sectoriel présent.'} ${info.weight > 2 ? 'Poids majeur — déplacement direct des futures.' : ''}`
+        : `Impact NQ <strong>${sectorData.nq === 'fort' ? 'bullish indirect' : 'limité'}</strong> via le thème ${info.sector}.`;
+    } else if (status === 'miss') {
+      const epsPct = epsEst !== 0 ? ((epsDelta / Math.abs(epsEst)) * 100).toFixed(1) : '—';
+      intro = `<strong>MISS</strong> — ${info.name} (${sym}) publie EPS $${epsAct.toFixed(2)} vs $${epsEst.toFixed(2)} attendu (<strong>${epsPct}%</strong>)${revAct && revEst ? `, revenus $${(revAct/1e9).toFixed(2)}B vs $${(revEst/1e9).toFixed(2)}B (${revDelta >= 0 ? '+' : ''}${((revDelta/revEst)*100).toFixed(1)}%)` : ''}.`;
+      mechanism = `Lecture <strong>bearish</strong> sur ${sectorData.theme}. Un miss provoque souvent des downgrades, des stops déclenchés et une pression sur les pairs. Attention : un miss avec guidance forward solide peut être racheté rapidement — la réaction des 60 premières minutes post-publication est décisive.`;
+      esImpact = inES
+        ? `<strong>Bearish ES</strong> — ${sym} pèse ~${info.weight}% du S&P 500. ${sectorData.es === 'fort' ? 'Forte contagion sectorielle attendue.' : 'Effet sectoriel limité, impact principalement via le titre.'} ${info.weight > 2 ? 'Poids critique — peut entraîner ES sur plusieurs points.' : ''}`
+        : `Impact ES <strong>indirect bearish</strong>. ${sym} hors S&P 500, mais le signal ${info.sector} pèse sur les pairs cotés.`;
+      nqImpact = inNQ
+        ? `<strong>Bearish NQ</strong> — composante Nasdaq 100. ${sectorData.nq === 'fort' ? 'Risque de contagion sectorielle élevé sur tech/semis.' : ''} ${info.weight > 2 ? 'Pondération significative — pression directe sur les futures.' : ''}`
+        : `Impact NQ <strong>${sectorData.nq === 'fort' ? 'bearish indirect' : 'limité'}</strong>.`;
+    } else { // inline
+      intro = `<strong>IN-LINE</strong> — ${info.name} (${sym}) publie en ligne avec le consensus (EPS $${epsAct.toFixed(2)} vs $${epsEst.toFixed(2)}). Pas de surprise.`;
+      mechanism = `Lecture <strong>neutre</strong>. La réaction se fera principalement sur la <strong>guidance forward</strong> et les commentaires de l'earnings call. Un in-line accompagné d'une guidance prudente est typiquement <em>bearish</em> ; une guidance optimiste est <em>bullish</em>. Surveiller les marges et le commentaire macro.`;
+      esImpact = inES ? `Impact ES <strong>neutre</strong> a priori, à confirmer sur guidance. ${sym} ~${info.weight}% du S&P.` : `Impact ES <strong>limité</strong>.`;
+      nqImpact = inNQ ? `Impact NQ <strong>neutre</strong> a priori, à confirmer sur guidance.` : `Impact NQ <strong>limité</strong>.`;
+    }
+
+    return { intro, mechanism, esImpact, nqImpact };
+  }
+
+  function getPeerHint(sector) {
+    const peers = {
+      'Semiconductors': 'NVDA, AMD, AVGO, MU',
+      'Tech / Software': 'MSFT, ORCL, CRM, ADBE',
+      'Tech / Cloud': 'MSFT, AMZN, GOOGL',
+      'Banks': 'JPM, BAC, WFC, C',
+      'Pharma': 'LLY, JNJ, MRK, PFE',
+      'Energy': 'XOM, CVX',
+      'Auto / EV': 'TSLA, F, GM',
+    };
+    return peers[sector] || 'pairs sectoriels';
+  }
+
+  // ============ RENDER ============
+  function renderTable(earnings) {
+    const tbody = document.getElementById('earnings-body');
+
+    // FILTER: only show companies in S&P 500 or Nasdaq 100
+    // This drastically reduces noise — small caps publishing aren't relevant for ES/NQ
+    const filtered = earnings.filter(e => passesFilter(e.symbol));
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="11" class="empty-state">
+        <h3>Aucune publication S&P 500 / Nasdaq 100 sur la période</h3>
+        <p>Total brut Finnhub : ${earnings.length} (toutes hors indices majeurs)</p>
+      </td></tr>`;
+      return;
+    }
+
+    // Sort: by exact best rank (lowest = most important), then by date, then BMO before AMC
+    const sessionOrder = { bmo: 0, dmh: 1, amc: 2, '': 3 };
+    filtered.sort((a, b) => {
+      const ra = Math.min(rankES(a.symbol), rankNQ(a.symbol));
+      const rb = Math.min(rankES(b.symbol), rankNQ(b.symbol));
+      if (ra !== rb) return ra - rb;
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (sessionOrder[a.hour || ''] ?? 9) - (sessionOrder[b.hour || ''] ?? 9);
+    });
+
+    // Re-assign filtered to earnings for the rest of the function
+    earnings = filtered;
+
+    let html = '';
+    earnings.forEach((e, idx) => {
+      const analysis = analyzeEarning(e);
+      const session = fmtSession(e.hour);
+      const info = analysis.info;
+
+      const epsEstStr = e.epsEstimate != null ? '$' + e.epsEstimate.toFixed(2) : '—';
+      const epsActStr = e.epsActual != null ? '$' + e.epsActual.toFixed(2) : '<span class="status-pending">en attente</span>';
+      const epsDeltaStr = analysis.epsDelta != null
+        ? `<span class="${analysis.epsDelta >= 0 ? 'delta-pos' : 'delta-neg'}">${(analysis.epsDelta >= 0 ? '+' : '') + analysis.epsDelta.toFixed(2)}</span>`
+        : '—';
+      const revEstStr = e.revenueEstimate != null ? (e.revenueEstimate/1e6).toFixed(0) : '—';
+      const revActStr = e.revenueActual != null ? (e.revenueActual/1e6).toFixed(0) : '<span class="status-pending">—</span>';
+
+      const statusLabel = {
+        pending: '<span class="status-pending">à venir</span>',
+        beat: '<span class="status-beat">BEAT</span>',
+        miss: '<span class="status-miss">MISS</span>',
+        inline: '<span class="status-inline">IN-LINE</span>',
+      }[analysis.status];
+
+      const indices = [];
+      if (analysis.inES) indices.push('ES');
+      if (analysis.inNQ) indices.push('NQ');
+      const indicesStr = indices.length ? indices.join(' / ') : '—';
+
+      const verdictHtml = `<span class="verdict ${analysis.verdict}">${analysis.verdict === 'bullish' ? 'Bullish' : analysis.verdict === 'bearish' ? 'Bearish' : 'Neutre'}</span> <span style="color:var(--fog);font-size:10px;margin-left:6px;">${indicesStr}</span>`;
+
+      const tier = getImportanceTier(e.symbol);
+
+      html += `<tr data-idx="${idx}" class="data-row row-${tier.class}">
+        <td>${fmtDate(e.date)}</td>
+        <td class="time-cell">
+          ${session.etTime}
+          <div class="time-sub">${session.parisTime}</div>
+        </td>
+        <td><span class="session-pill ${e.hour || ''}">${session.code}</span></td>
+        <td>
+          <span class="tier-badge ${tier.class}">${tier.label}</span>
+          <span class="sym">${e.symbol}</span>
+          <div class="company-name">${info.name}${info.sector !== 'Autre' ? ' · ' + info.sector : ''}</div>
+          <div class="weight-line">
+            ${weightES(e.symbol) > 0 ? `<span class="weight-es">ES <strong>${weightES(e.symbol).toFixed(2)}%</strong></span>` : ''}
+            ${weightNQ(e.symbol) > 0 ? `<span class="weight-nq">NQ <strong>${weightNQ(e.symbol).toFixed(2)}%</strong></span>` : ''}
+          </div>
+        </td>
+        <td class="num">${epsEstStr}</td>
+        <td class="num">${epsActStr}</td>
+        <td class="num">${epsDeltaStr}</td>
+        <td class="num">${revEstStr}</td>
+        <td class="num">${revActStr}</td>
+        <td>${statusLabel}</td>
+        <td>${verdictHtml}</td>
+      </tr>`;
+
+      const synth = buildSynthesis(e, analysis);
+      html += `<tr class="synth-row" data-synth="${idx}">
+        <td colspan="11" class="synth-cell">
+          <div class="synth-content">
+            <div class="synth-block">
+              <h4>Lecture du trimestre</h4>
+              <p>${synth.intro}</p>
+              <p style="margin-top: 12px;">${synth.mechanism}</p>
+            </div>
+            <div class="synth-block">
+              <h4>Impact sur les indices</h4>
+              <div class="impact-line"><span>ES — S&P 500</span><span>${analysis.inES ? 'Composante (' + info.weight + '%)' : 'Hors indice'}</span></div>
+              <div class="impact-line"><span>NQ — Nasdaq 100</span><span>${analysis.inNQ ? 'Composante' : 'Hors indice'}</span></div>
+              <div class="impact-line"><span>Corrélation sectorielle ES</span><span>${analysis.sectorData.es}</span></div>
+              <div class="impact-line"><span>Corrélation sectorielle NQ</span><span>${analysis.sectorData.nq}</span></div>
+              <p style="margin-top: 14px;">${synth.esImpact}</p>
+              <p style="margin-top: 10px;">${synth.nqImpact}</p>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    });
+
+    tbody.innerHTML = html;
+
+    // Click handlers
+    tbody.querySelectorAll('.data-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const idx = row.dataset.idx;
+        const synthRow = tbody.querySelector(`[data-synth="${idx}"]`);
+
+        // Close any other open row
+        tbody.querySelectorAll('.synth-row.open').forEach(r => {
+          if (r !== synthRow) {
+            r.classList.remove('open');
+            const prevIdx = r.dataset.synth;
+            tbody.querySelector(`[data-idx="${prevIdx}"]`)?.classList.remove('expanded');
+          }
+        });
+
+        synthRow.classList.toggle('open');
+        row.classList.toggle('expanded');
+      });
+    });
+  }
+
+  function renderKPIs(earnings) {
+    // Apply same filter as renderTable — only S&P 500 / NDX
+    const filtered = earnings.filter(e => passesFilter(e.symbol));
+    const total = filtered.length;
+    let beats = 0, misses = 0, inline = 0, pending = 0;
+    let esNet = 0, nqNet = 0;
+    let top10Count = 0;
+
+    filtered.forEach(e => {
+      const a = analyzeEarning(e);
+      const tier = getImportanceTier(e.symbol);
+      if (tier.tier === 10) top10Count++;
+      if (a.status === 'beat') { beats++; if (a.inES) esNet++; if (a.inNQ) nqNet++; }
+      else if (a.status === 'miss') { misses++; if (a.inES) esNet--; if (a.inNQ) nqNet--; }
+      else if (a.status === 'inline') inline++;
+      else pending++;
+    });
+
+    document.getElementById('kpi-total').textContent = total;
+    document.getElementById('kpi-total-meta').textContent = `TOP 100 ES + TOP 20 NQ · ${top10Count} TOP 10`;
+    document.getElementById('kpi-beat').textContent = beats;
+    document.getElementById('kpi-beat-meta').textContent = total - pending > 0 ? `${((beats / (total - pending)) * 100).toFixed(0)}% des publiés` : 'sur la période';
+    document.getElementById('kpi-miss').textContent = misses;
+    document.getElementById('kpi-miss-meta').textContent = total - pending > 0 ? `${((misses / (total - pending)) * 100).toFixed(0)}% des publiés` : 'sur la période';
+    document.getElementById('kpi-es').textContent = (esNet >= 0 ? '+' : '') + esNet;
+    document.getElementById('kpi-nq').textContent = (nqNet >= 0 ? '+' : '') + nqNet;
+  }
+
+  async function refreshAllCounts() {
+    // Just update the active tab data; show "—" elsewhere or pre-cache lightly
+    // To avoid hitting rate limits, only refetch counts when really needed
+  }
+
+  // ============ MAIN LOOP ============
+  async function loadData() {
+    document.getElementById('refresh-icon').classList.add('active');
+    const earnings = await fetchEarnings(currentRange);
+    allEarnings = earnings;
+    renderTable(earnings);
+    renderKPIs(earnings);
+
+    const now = new Date();
+    document.getElementById('last-update').textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Update count badge for current tab
+    document.getElementById('count-' + currentRange).textContent = earnings.filter(e => passesFilter(e.symbol)).length;
+
+    setTimeout(() => document.getElementById('refresh-icon').classList.remove('active'), 800);
+  }
+
+  function startRefreshLoop() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    countdown = REFRESH_MS / 1000;
+    refreshTimer = setInterval(() => {
+      countdown--;
+      document.getElementById('next-refresh').textContent = countdown + 's';
+      if (countdown <= 0) {
+        loadData();
+        countdown = REFRESH_MS / 1000;
+      }
+    }, 1000);
+  }
+
+  // ============ TABS ============
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentRange = tab.dataset.range;
+      loadData();
+      countdown = REFRESH_MS / 1000;
+    });
+  });
+
+  // ============ BOOT ============
+  updateClocks();
+  setInterval(updateClocks, 1000);
+  loadData();
+  startRefreshLoop();
+</script>
+</body>
+</html>
